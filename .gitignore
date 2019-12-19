@@ -1,3 +1,5 @@
 *.pyc
 *instance*
 *old_flaskr*
+*secret*
+*__pycache__*
