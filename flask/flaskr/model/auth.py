@@ -1,11 +1,12 @@
 from passlib.hash import sha256_crypt
 from . import db
+from .. import global_values
 
-PWD ='pwd'
-EMAIL = 'email'
-TAGS = 'tags'
-USER = 'User'
-SUCCESS = 'success'
+PWD = global_values.User.PWD.value
+EMAIL = global_values.User.EMAIL.value
+TAGS = global_values.User.TAGS.value
+USER = global_values.User.USER.value
+SUCCESS = global_values.Database.SUCCESS.value
 
 def register(email, pwd, tags=[]):
     """
@@ -16,7 +17,8 @@ def register(email, pwd, tags=[]):
     query = {EMAIL: email}
     error = SUCCESS
 
-    if users.find(query) == 1:
+    print(users.count(query))
+    if users.count(query) == 1:
         error = 'Email {} is already registered.'.format(email)
 
     if error == SUCCESS:

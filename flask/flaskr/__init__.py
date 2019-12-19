@@ -1,7 +1,7 @@
 import os
 # accessible as a variable in index.html:
 from flask import Flask, request, render_template, redirect, Response
-from . import auth
+from . import controller
 
 
 def create_app(test_config=None):
@@ -9,7 +9,6 @@ def create_app(test_config=None):
     tmpl_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
     app = Flask(__name__, instance_relative_config=True, template_folder=tmpl_dir)
 
-    # 2019/11/8
     app.secret_key = os.urandom(24)
 
     if test_config is None:
@@ -25,10 +24,8 @@ def create_app(test_config=None):
     except OSError:
         pass
 
-    # register home page as blueprint
-    # app.register_blueprint(index.bp)
-    app.register_blueprint(auth.bp)
-    app.add_url_rule('/', endpoint='index')
+    # register pages as blueprint
+    app.register_blueprint(controller.bp)
 
     return app
 

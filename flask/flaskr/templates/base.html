@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<style>
+  body{ 
+    font-size: 15pt;
+    font-family: arial;
+  }
+</style>
+<head>
+    <title>PC Game Shop</title>
+</head>
+
+
+<nav>
+  <ul>
+    {% if g.user %}
+      <li><span>Player email: {{ g.user }}</span>
+      <li><a href="{{ url_for('controller.logout') }}">Log Out</a>
+    {% else %}
+      <li><a href="{{ url_for('controller.register') }}">Register</a>
+      <li><a href="{{ url_for('controller.login') }}">Log In</a>
+    {% endif %}
+  </ul>
+</nav>
+<section class="content">
+  <header>
+    {% block header %}{% endblock %}
+  </header>
+  {% for message in get_flashed_messages() %}
+    <div class="flash">{{ message }}</div>
+  {% endfor %}
+  {% block content %}{% endblock %}
+</section>
+
+
+<body>
+ {% block body %}{% endblock %}
+</body>
+</html>
