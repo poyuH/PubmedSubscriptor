@@ -2,7 +2,7 @@ from flask import (
     Blueprint, redirect, render_template, request, session, flash, url_for, g
 )
 import functools
-from .model import db, auth
+from .model import db, auth, paper
 from . import global_values
 
 my_db = db
@@ -12,6 +12,7 @@ EMAIL = global_values.User.EMAIL.value
 PWD = global_values.User.PWD.value
 TAGS = global_values.User.TAGS.value
 USER_ID = global_values.Session.USER_ID.value
+PAPERS = global_values.Tag.PAPERS.value
 
 # connects to our database
 @bp.before_request
@@ -25,7 +26,12 @@ def teardown_request(exception):
 
 @bp.route('/', methods=('GET', 'POST'))
 def home_page():
-    return render_template("index.html")
+    context = {}
+    if g.user:
+        tags = paper.get_user_tags(g.user)
+        context = paper.get_papers(tags)
+        print('sucess')
+    return render_template("index.html", **context)
 
 @bp.route('/register', methods=('GET', 'POST'))
 def register():
@@ -66,8 +72,6 @@ def logout():
 
 @bp.before_app_request
 def load_logged_in_user():
-    print(session)
-    print(g)
     user_id = session.get(USER_ID)
     if user_id is None:
         g.user = None

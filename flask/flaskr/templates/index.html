@@ -19,8 +19,21 @@
         }
     };
 </script>
-    -->
+--->
     <h1>PC Game Shop</h1>
+    {% if g.user %}
+      <div>
+        {% for i in range(url|length) %}
+        <div><a href={{url[i]}}>{{title[i]}}</a></div>
+        <div>{{abstract[i]}}</div>
+        {% endfor %}
+      </div>
+      <li><span>Player tags: {{ g.user }}</span>
+      <li><a href="{{ url_for('controller.logout') }}">Log Out</a>
+    {% else %}
+      <li><a href="{{ url_for('controller.register') }}">Register</a>
+      <li><a href="{{ url_for('controller.login') }}">Log In</a>
+    {% endif %}
     <!--
     <form method="POST" action="/search">
       <p>Search <input type="text" name="name"> <input type="submit" value="search"></p>
