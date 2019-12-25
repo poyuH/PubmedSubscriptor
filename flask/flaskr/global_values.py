@@ -3,7 +3,7 @@ from enum import Enum
 class User(Enum):
     PWD = 'pwd'
     EMAIL = 'email'
-    TAGS = 'tags'
+    STRMS = 'search_terms'
     USER = 'User'
 
 class Database(Enum):
@@ -21,10 +21,9 @@ class Paper(Enum):
     PUB_DATE = 'publish_date'
     ABSTRACT = 'abstract'
     TITLE = 'title'
-    TAGS = 'tags'
 
-class Tag(Enum):
-    TAG = 'Tag'
+class SearchTerm(Enum):
+    STRM = 'SearchTerm'
     PAPERS = 'papers'
-    STR = 'string'
-    NEW_DATE = 'newest_date'
+    QUERY = 'query'
+    MINDATE = 'min_date'

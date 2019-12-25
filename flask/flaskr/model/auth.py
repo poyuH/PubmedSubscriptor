@@ -4,11 +4,11 @@ from .. import global_values
 
 PWD = global_values.User.PWD.value
 EMAIL = global_values.User.EMAIL.value
-TAGS = global_values.User.TAGS.value
+STRMS = global_values.User.STRMS.value
 USER = global_values.User.USER.value
 SUCCESS = global_values.Database.SUCCESS.value
 
-def register(email, pwd, tags=[]):
+def register(email, pwd, search_terms=[]):
     """
     return 'success' if successfully register, return error if fail
     """
@@ -23,7 +23,7 @@ def register(email, pwd, tags=[]):
 
     if error == SUCCESS:
         password = sha256_crypt.encrypt(pwd)
-        document = {EMAIL:email, PWD:password, TAGS: tags}
+        document = {EMAIL:email, PWD:password, STRMS: search_terms}
         users.insert_one(document)
     return error
 

@@ -10,9 +10,10 @@ bp = Blueprint('controller', __name__)
 SUCCESS = global_values.Database.SUCCESS.value
 EMAIL = global_values.User.EMAIL.value
 PWD = global_values.User.PWD.value
-TAGS = global_values.User.TAGS.value
+STRMS = global_values.User.STRMS.value
 USER_ID = global_values.Session.USER_ID.value
-PAPERS = global_values.Tag.PAPERS.value
+PAPERS = global_values.SearchTerm.PAPERS.value
+MINDATE = global_values.SearchTerm.MINDATE.value
 
 # connects to our database
 @bp.before_request
@@ -27,10 +28,14 @@ def teardown_request(exception):
 @bp.route('/', methods=('GET', 'POST'))
 def home_page():
     context = {}
+    if request.method == 'POST':
+        search_term = request.form[STRMS]
+        date_after = request.form[MINDATE]
+        context = parserController.parse_search_results(search_term, '2018/08/14')
+        return render_template("index.html", **context)
     if g.user:
-        tags = paper.get_user_tags(g.user)
-        context = paper.get_papers(tags)
-        print('sucess')
+        search_terms = paper.get_user_search_terms(g.user)
+        context = paper.get_papers(search_terms)
     return render_template("index.html", **context)
 
 @bp.route('/register', methods=('GET', 'POST'))
