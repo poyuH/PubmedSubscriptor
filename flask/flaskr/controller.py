@@ -3,6 +3,7 @@ from flask import (
 )
 import functools
 from .model import db, auth, paper
+from .parser import parserController
 from . import global_values
 
 my_db = db
