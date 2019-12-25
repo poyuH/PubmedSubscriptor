@@ -1,0 +1,25 @@
+<nav class="fixed-top navbar navbar-dark bg-dark navbar-expand-md">
+    <a class="navbar-brand text-center mr-auto" href='/' style="padding-right: 20px">Pubmed Subscription</a>
+    <button class='navbar-toggler' data-toggle="collapse" data-target="#navbarMenu">
+        <span class='navbar-toggler-icon'></span>
+    </button>
+    <div id="navbarMenu" class="navbar-collapse collapse bg-dark">
+        {% if g.user %}
+        <span class="navbar-text text-center"> Hello, {{g.user}} </span>
+        {% endif %}
+        <ul class="navbar-nav list-group ml-auto">
+            {% if g.user %}
+            <li class="nav-item list-group-item bg-dark" >
+                <a href={{ url_for('controller.logout') }} class="nav-link">Logout</a>
+            </li>
+            {% else %}
+            <li class="nav-item list-group-item bg-dark">
+                <a href={{ url_for('controller.login') }} class="nav-link">Login</a>
+            </li>
+            <li class="nav-item list-group-item bg-dark">
+                <a href={{ url_for('controller.register') }} class="nav-link">Register</a>
+            </li>
+            {% endif %}
+        </ul>
+</div>
+</nav>
