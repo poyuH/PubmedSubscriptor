@@ -3,6 +3,7 @@ from rq import Queue
 from .parser import pmid_gen, parse_pmid
 from .. import global_values
 from collections import defaultdict
+import time
 
 PMID = global_values.Paper.PMID.value
 JOURNAL = global_values.Paper.JOURNAL.value
@@ -20,8 +21,12 @@ def parse_search_results(query, date_after, n=30):
     q = Queue(connection=Redis())
     for pmid in pmid_gen(query, date_after, n):
         jobs.append(q.enqueue(parse_pmid, pmid))
-    while len(q) >= 1:
+
+    while len(q) > 0:
         continue
+    # TODO better solution?
+    if not jobs[-1].result:
+        time.sleep(2)
     context = defaultdict(list)
     for job in jobs:
         try:

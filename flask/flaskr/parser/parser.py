@@ -1,6 +1,7 @@
 from bs4 import BeautifulSoup as bs
+from datetime import datetime
 from .. import global_values
-import requests, json, datetime, os
+import requests, json, os
 
 
 ID = 'id'
@@ -27,7 +28,8 @@ def pmid_gen(query, date_after, retmax):
     """
     return upto retmax amount of PMID results
     """
-    url = BASE + "esearch.fcgi?db=pubmed&api_key=%s&term=%s&retstart=%i&retmax=%i&mindate=%s" % (APIKEY, query, restart, retmax, date_after)
+    today = datetime.now().strftime("%Y/%m/%d")
+    url = BASE + "esearch.fcgi?db=pubmed&api_key=%s&term=%s&retstart=%i&retmax=%i&mindate=%s&maxdate=%s&datetype=edat" % (APIKEY, query, restart, retmax, date_after, today)
     soup = bs(requests.get(url).content, features='html.parser')
     for pmid in soup.findAll(ID):
         yield pmid.string
@@ -51,7 +53,7 @@ def parse_pmid(pmid):
             if summary.get(ERROR) == API_RATE_LIMIT:
                 raise APIRateLimitError
             break
-    sortpubdate = datetime.datetime.strptime(db_dict.get(PUB_DATE), '%Y/%m/%d %H:%M')
+    sortpubdate = datetime.strptime(db_dict.get(PUB_DATE), '%Y/%m/%d %H:%M')
     db_dict[PUB_DATE] = sortpubdate
     return db_dict
 """
