@@ -14,12 +14,9 @@
             </li>
             {% else %}
             <li class="nav-item list-group-item bg-dark">
-                <a href={{ url_for('controller.login') }} class="nav-link">Login</a>
-            </li>
-            <li class="nav-item list-group-item bg-dark">
-                <a href={{ url_for('controller.register') }} class="nav-link">Register</a>
+                <a href="" id="login_register" class="nav-link" data-toggle="modal" data-target="#modalLRForm">Login/Register</a>
             </li>
             {% endif %}
         </ul>
-</div>
+    </div>
 </nav>
