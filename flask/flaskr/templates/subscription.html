@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block body %}
+{% set k = 0%}
+{% for i in range(search_terms|length) %}
+<div class="card bg-light">
+    <div class="card-header">
+        <h5 class="card-title">Search term: {{search_terms[i]}}</h5>
+    </div>
+    <div class="card-body">
+    {% for j in range(k, url|length) %}
+    {% if url[j] != 'break' %}
+    <li><a href={{url[j]}}>{{title[j]}}</a></li>
+    <ul>publish date: {{publish_date[j]}}</ul>
+
+    {% else %}
+    {% set k = j+1%}
+    {% endif %}
+    {% endfor %}
+    </div>
+     <div class="card-footer">
+         <a href="/delete/{{search_term_id[i]}}" class="btn btn-danger">Delete</a>
+     </div>
+</div>
+{% endfor %}
+    <form method="post">
+    <div class="form-group">
+    </div>
+    </form>
+<a href={{url_for("controller.home_page")}} class="btn btn-success">Add More</a>
+{% endblock %}

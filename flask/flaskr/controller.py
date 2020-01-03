@@ -19,8 +19,19 @@ ID = global_values.Database.ID.value
 USER_ID = global_values.Session.USER_ID.value
 PAPERS = global_values.SearchTerm.PAPERS.value
 MINDATE = global_values.SearchTerm.MINDATE.value
+MINDATES = MINDATE + 's'
 CONTEXT = 'context'
 RESULT = 'result'
+
+def login_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if g.user is None:
+            return redirect(url_for('controller.login'))
+
+        return view(**kwargs)
+
+    return wrapped_view
 
 # connects to our database
 @bp.before_request
@@ -52,6 +63,19 @@ def home_page():
         if session.get(CONTEXT):
             context = session.get(CONTEXT)
     return render_template("index.html", **context)
+
+@bp.route('/subscription', methods=['GET', 'POST'])
+@login_required
+def subscription():
+    """
+    context = session.get(CONTEXT)
+    if not context:
+        context = {}
+    """
+    context = {}
+    search_term_ids, search_terms = paper.get_user_search_terms(g.user)
+    context = paper.get_papers(search_term_ids, search_terms)
+    return render_template("subscription.html", **context)
 
 @bp.route('/register', methods=['POST', 'GET'])
 def register():
@@ -100,12 +124,3 @@ def load_logged_in_user():
     else:
         g.user = user_id
 
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if g.user is None:
-            return redirect(url_for('auth.login'))
-
-        return view(**kwargs)
-
-    return wrapped_view

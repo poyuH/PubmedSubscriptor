@@ -41,7 +41,8 @@
         });
     </script>
     </div>
-        <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
+        <button class="btn btn-primary" type="submit" id="search" name="search">Search</button>
+        <a href={{url_for("controller.subscription")}} class="btn btn-success">Add To Your Subscription</a>
     </form>
     <label for="results">{{result}}</label>
     {% for i in range(url|length)%}
