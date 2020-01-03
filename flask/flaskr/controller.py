@@ -7,16 +7,20 @@ from .model import db, auth, paper
 from .parser import parserController
 from . import global_values
 
+
 my_db = db
 bp = Blueprint('controller', __name__)
 SUCCESS = global_values.Database.SUCCESS.value
 EMAIL = global_values.User.EMAIL.value
 PWD = global_values.User.PWD.value
 STRMS = global_values.User.STRMS.value
+STRM = global_values.User.STRM.value
+ID = global_values.Database.ID.value
 USER_ID = global_values.Session.USER_ID.value
 PAPERS = global_values.SearchTerm.PAPERS.value
 MINDATE = global_values.SearchTerm.MINDATE.value
 CONTEXT = 'context'
+RESULT = 'result'
 
 # connects to our database
 @bp.before_request
@@ -39,18 +43,17 @@ def home_page():
         else:
             date_after = "1800/01/01"
         context = parserController.parse_search_results(search_term, date_after)
-        context[STRMS] = search_term
+        context[STRM] = search_term
         context[MINDATE] = mindate
+        context[RESULT] = 'The 10 most up to date papers:'
         session[CONTEXT] = context
         return render_template("index.html", **context)
     if g.user:
-        context = session.get(CONTEXT)
-        # TODO
-        # search_terms = paper.get_user_search_terms(g.user)
-        # context = paper.get_papers(search_terms)
+        if session.get(CONTEXT):
+            context = session.get(CONTEXT)
     return render_template("index.html", **context)
 
-@bp.route('/register', methods=['POST'])
+@bp.route('/register', methods=['POST', 'GET'])
 def register():
     context = {}
     if request.method == 'POST':
@@ -67,7 +70,7 @@ def register():
         flash(error)
     return render_template('auth/register.html')
 
-@bp.route('/login', methods=['POST'])
+@bp.route('/login', methods=['POST', 'GET'])
 def login():
     context = {}
     if request.method == 'POST':

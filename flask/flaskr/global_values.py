@@ -4,6 +4,7 @@ class User(Enum):
     PWD = 'pwd'
     EMAIL = 'email'
     STRMS = 'search_terms'
+    STRM = 'search_term'
     USER = 'User'
 
 class Database(Enum):

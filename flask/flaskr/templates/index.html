@@ -23,13 +23,6 @@
 </script>
 -->
     {% if g.user %}
-      <div>
-        {% for i in range(url|length) %}
-        <div><a href={{url[i]}}>{{title[i]}}</a></div>
-        <div>{{abstract[i]}}</div>
-        {% endfor %}
-      </div>
-      <li><span>Player tags: {{ g.user }}</span>
     {% else %}
     <script>
         $("#login_register").click();
@@ -39,7 +32,8 @@
     <form method="post">
     <div class="form-group">
         <label for="exampleFormControlTextarea1">Paste your search details here</label>
-        <textarea class="form-control" id="search_terms" name="search_terms" rows="3">{{search_terms}}</textarea>
+        <textarea class="form-control" id="search_terms" name="search_terms" rows="3">{{search_term}}</textarea>
+        <label for="datepicker">Papers published after:</label>
     <input id="datepicker" name="min_date" width="276" value={{min_date}}>
     <script>
         $('#datepicker').datepicker({
@@ -49,8 +43,9 @@
     </div>
         <button class="btn btn-primary" type="submit" id="button-addon2">Search</button>
     </form>
+    <label for="results">{{result}}</label>
     {% for i in range(url|length)%}
-        <div><a href={{url[i]}}>{{title[i]}}</a></div>
-        <div>{{abstract[i]}}</div>
+    <div><li><a href={{url[i]}} id="results">{{title[i]}}</a></li></div>
+        <!--<div>{{abstract[i]}}</div> -->
     {% endfor %}
 {% endblock %}
