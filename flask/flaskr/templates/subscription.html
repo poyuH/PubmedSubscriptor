@@ -1,21 +1,25 @@
 {% extends "base.html" %}
 
 {% block body %}
-{% set k = 0%}
+<script>
+    $(document).on("click", "#delete-btn", function () {
+        var searchTermIdx = $(this).val();
+        $("#delete").attr("href", "/delete/" + searchTermIdx );
+    });
+</script>
 {% for i in range(search_terms|length) %}
 <div class="card bg-light">
     <div class="card-header">
         <h5 class="card-title">Search term: {{search_terms[i]}}</h5>
     </div>
     <div class="card-body">
-    {% for j in range(k, url|length) if url[j] != 'break'%}
+    {% for j in range(break_pts[i], break_pts[i+1])%}
     <li><a href={{url[j]}}>{{title[j]}}</a></li>
     <ul>publish date: {{publish_date[j]}}</ul>
-    {% set k = j+1%}
     {% endfor %}
     </div>
      <div class="card-footer">
-         <button type="button" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal">Delete</button>
+         <button type="button" id="delete-btn" class="btn btn-danger" data-toggle="modal" data-target="#exampleModal" value={{search_term_id[i]}}>Delete</button>
      </div>
 </div>
 {% endfor %}
@@ -36,7 +40,7 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-dismiss="modal">No</button>
-         <a href="/delete/{{search_term_id[i]}}" class="btn btn-danger">Yes</a>
+         <a href="/subscription" id="delete" class="btn btn-danger">Yes</a>
       </div>
     </div>
   </div>

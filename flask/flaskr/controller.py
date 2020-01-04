@@ -80,8 +80,9 @@ def subscription():
 @bp.route('/delete/<search_term_idx>', methods=['GET', 'POST'])
 @login_required
 def delete(search_term_idx):
-    email = session.get(USER_ID)
-    paper.delete_search_term(email, search_term_idx)
+    if search_term_idx:
+        email = session.get(USER_ID)
+        paper.delete_search_term(email, search_term_idx)
     return redirect(url_for('controller.subscription'))
 
 @bp.route('/register', methods=['POST', 'GET'])

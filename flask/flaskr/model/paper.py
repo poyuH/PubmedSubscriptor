@@ -20,6 +20,7 @@ QUERY = global_values.SearchTerm.QUERY.value
 ID = global_values.Database.ID.value
 PAPER_ID = 'paper' + ID
 STRM_ID = 'search_term' + ID
+BREAK_PTS = 'break_pts'
 
 def get_user_search_terms(email):
     """
@@ -44,6 +45,7 @@ def get_papers(search_term_ids, search_terms):
     papers_col = pubmed_db[PAPER]
     context = defaultdict(list)
     outer_dict = defaultdict(list)
+    outer_dict[BREAK_PTS].append(0)
     for i, idx in enumerate(search_term_ids):
         query = {ID: idx}
         outer_dict[STRM_ID].append(idx)
@@ -53,13 +55,12 @@ def get_papers(search_term_ids, search_terms):
                 paper = papers_col.find_one({ID: paper_id})
                 context[PAPER_ID].append(paper_id)
                 context[URL].append('https://www.ncbi.nlm.nih.gov/pubmed/' + paper[PMID])
-                context[ABSTRACT].append(paper[ABSTRACT])
-                context[TITLE].append(paper[TITLE])
-                context[PUB_DATE].append(paper[PUB_DATE].strftime("%Y-%m-%d"))
-                context[JOURNAL].append(paper[JOURNAL])
+                context[ABSTRACT].append(paper.get(ABSTRACT))
+                context[TITLE].append(paper.get(TITLE))
+                context[PUB_DATE].append(paper.get(PUB_DATE).strftime("%Y-%m-%d"))
+                context[JOURNAL].append(paper.get(JOURNAL))
                 context[STRMS].append(search_terms[i])
-        for key in context:
-            context[key].append('break')
+        outer_dict[BREAK_PTS].append(len(context[URL]))
     context.update(outer_dict)
     return context
 
@@ -86,7 +87,6 @@ def delete_search_term(email, search_term_idx_string):
         for old_paper_idx in result.get(PAPERS):
             old_paper = paper_col.find_one({ID: old_paper_idx})
             old_search_term_ids = old_paper.get(STRMS)
-            print(old_search_term_ids)
             old_search_term_ids.remove(search_term_idx)
             if len(old_search_term_ids) < 1:
                 paper_col.delete_one({ID: old_paper_idx})
