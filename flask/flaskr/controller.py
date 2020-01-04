@@ -33,15 +33,18 @@ def login_required(view):
 
     return wrapped_view
 
+
 # connects to our database
 @bp.before_request
 def before_request():
     my_db.start()
 
+
 # close our database
 @bp.teardown_request
 def teardown_request(exception):
     my_db.close(exception)
+
 
 @bp.route('/', methods=['GET', 'POST'])
 def home_page():
@@ -64,6 +67,7 @@ def home_page():
             context = session.get(CONTEXT)
     return render_template("index.html", **context)
 
+
 @bp.route('/subscription', methods=['GET', 'POST'])
 @login_required
 def subscription():
@@ -77,6 +81,16 @@ def subscription():
     context = paper.get_papers(search_term_ids, search_terms)
     return render_template("subscription.html", **context)
 
+
+@bp.route('/add', methods=['GET', 'POST'])
+@login_required
+def add():
+    if session.get(CONTEXT):
+        email = session.get(USER_ID)
+        paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT), datetime.today())
+    return redirect(url_for('controller.subscription'))
+
+
 @bp.route('/delete/<search_term_idx>', methods=['GET', 'POST'])
 @login_required
 def delete(search_term_idx):
@@ -84,6 +98,7 @@ def delete(search_term_idx):
         email = session.get(USER_ID)
         paper.delete_search_term(email, search_term_idx)
     return redirect(url_for('controller.subscription'))
+
 
 @bp.route('/register', methods=['POST', 'GET'])
 def register():
@@ -102,6 +117,7 @@ def register():
         flash(error)
     return render_template('auth/register.html')
 
+
 @bp.route('/login', methods=['POST', 'GET'])
 def login():
     context = {}
@@ -119,10 +135,12 @@ def login():
         flash(error)
     return render_template('auth/login.html')
 
+
 @bp.route('/logout')
 def logout():
     session.clear()
     return redirect(url_for('controller.home_page'))
+
 
 @bp.before_app_request
 def load_logged_in_user():

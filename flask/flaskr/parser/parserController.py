@@ -48,6 +48,7 @@ def parse_search_results(query, date_after, n=10):
     context = defaultdict(list)
     for pmid in pmid_gen(query, date_after, n):
         result_dict = get_metadata(pmid)
+        context[PMID].append(result_dict.get(PMID))
         context[URL].append('https://www.ncbi.nlm.nih.gov/pubmed/' + result_dict.get(PMID))
         context[TITLE].append(result_dict.get(TITLE))
         context[PUB_DATE].append(result_dict.get(PUB_DATE))
