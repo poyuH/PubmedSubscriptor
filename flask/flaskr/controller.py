@@ -88,7 +88,12 @@ def subscription():
 def add():
     if session.get(CONTEXT):
         email = session.get(USER_ID)
-        paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT))
+        try:
+            paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT))
+        except paper.TooManySearchTerms:
+            flash("Too many search terms. Please delete some before adding.")
+        except:
+            pass
     return redirect(url_for('controller.subscription'))
 
 
@@ -97,7 +102,10 @@ def add():
 def delete(search_term_idx):
     if search_term_idx:
         email = session.get(USER_ID)
-        paper.delete_search_term(email, search_term_idx)
+        try:
+            paper.delete_search_term(email, search_term_idx)
+        except:
+            pass
     return redirect(url_for('controller.subscription'))
 
 

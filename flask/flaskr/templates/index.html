@@ -43,6 +43,8 @@
         <button class="btn btn-primary" type="submit" id="search" name="search">Search</button>
         {% if g.user and session["context"] %}
         <a href={{url_for("controller.add")}} class="btn btn-success">Add To Your Subscription</a>
+        {% elif g.user %}
+        <a href={{url_for("controller.subscription")}} class="btn btn-success">Go To Your Subscription</a>
         {% endif %}
     </form>
     <label for="results">{{result}}</label>

@@ -24,6 +24,10 @@ PAPER_ID = 'paper' + ID
 STRM_ID = 'search_term' + ID
 BREAK_PTS = 'break_pts'
 
+
+class TooManySearchTerms(Exception):
+    pass
+
 def get_user_search_terms(email):
     """
     get ObjectId of tags based on email
@@ -108,7 +112,11 @@ def add_search_term(email, search_term, context):
     search_term_col = pubmed_db[STRM]
     paper_col = pubmed_db[PAPER]
     paper_ids = []
-    # first check if there is any paper in context
+    # check if this email has too many search terms
+    if len(users_col.find_one({EMAIL: email}).get(STRMS)) >= 5:
+        raise TooManySearchTerms
+
+    # check if there is any paper in context
     # check if pmid already exist, then create list of objectid of pmid
     if context.get(PMID):
         for i, pmid in enumerate(context.get(PMID)):
