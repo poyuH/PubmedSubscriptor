@@ -63,8 +63,39 @@ def get_papers(search_term_ids, search_terms):
     context.update(outer_dict)
     return context
 
-def delete_search_terms(search_term_idx):
+def delete_search_term(email, search_term_idx_string):
     """
-    delete_search_terms based on SearchTerm objectid
+    delete_search_terms based on SearchTerm objectid and email
     """
+    search_term_idx = ObjectId(search_term_idx_string)
+    pubmed_db = db.get_db()
+    users_col = pubmed_db[USER]
+    search_term_col = pubmed_db[STRM]
+    paper_col = pubmed_db[PAPER]
+
+    # delete from User
+    query = {EMAIL: email}
+    old_search_term_ids = users_col.find_one(query)[STRMS]
+    old_search_term_ids.remove(search_term_idx)
+    new_search_term_ids = {'$set': {STRMS: old_search_term_ids}}
+    users_col.update_one(query, new_search_term_ids)
+
+    # delete papers which only associated with this search_term_idx
+    query = {ID: search_term_idx}
+    for result in search_term_col.find(query):
+        for old_paper_idx in result.get(PAPERS):
+            old_paper = paper_col.find_one({ID: old_paper_idx})
+            old_search_term_ids = old_paper.get(STRMS)
+            print(old_search_term_ids)
+            old_search_term_ids.remove(search_term_idx)
+            if len(old_search_term_ids) < 1:
+                paper_col.delete_one({ID: old_paper_idx})
+            else:
+                new_search_term_ids = {'$set': {STRMS: old_search_term_ids}}
+                paper_col.update_one({ID: old_paper_idx}, new_search_term_ids)
+    # delete search_term_idx
+    query = {ID: search_term_idx}
+    search_term_col.delete_one(query)
+
+
 

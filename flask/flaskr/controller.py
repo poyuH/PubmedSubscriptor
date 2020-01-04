@@ -77,6 +77,13 @@ def subscription():
     context = paper.get_papers(search_term_ids, search_terms)
     return render_template("subscription.html", **context)
 
+@bp.route('/delete/<search_term_idx>', methods=['GET', 'POST'])
+@login_required
+def delete(search_term_idx):
+    email = session.get(USER_ID)
+    paper.delete_search_term(email, search_term_idx)
+    return redirect(url_for('controller.subscription'))
+
 @bp.route('/register', methods=['POST', 'GET'])
 def register():
     context = {}
