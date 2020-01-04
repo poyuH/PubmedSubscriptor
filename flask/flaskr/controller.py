@@ -19,6 +19,7 @@ ID = global_values.Database.ID.value
 USER_ID = global_values.Session.USER_ID.value
 PAPERS = global_values.SearchTerm.PAPERS.value
 MINDATE = global_values.SearchTerm.MINDATE.value
+PMID = global_values.Paper.PMID.value
 MINDATES = MINDATE + 's'
 CONTEXT = 'context'
 RESULT = 'result'
@@ -87,7 +88,7 @@ def subscription():
 def add():
     if session.get(CONTEXT):
         email = session.get(USER_ID)
-        paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT), datetime.today())
+        paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT))
     return redirect(url_for('controller.subscription'))
 
 

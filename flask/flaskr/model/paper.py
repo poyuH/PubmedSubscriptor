@@ -2,6 +2,7 @@ from . import db
 from .. import global_values
 from bson.objectid import ObjectId
 from collections import defaultdict
+from datetime import datetime
 
 USER = global_values.User.USER.value
 EMAIL = global_values.User.EMAIL.value
@@ -98,7 +99,7 @@ def delete_search_term(email, search_term_idx_string):
     query = {ID: search_term_idx}
     search_term_col.delete_one(query)
 
-def add_search_term(email, search_term, context, min_date):
+def add_search_term(email, search_term, context):
     """
     add search_term to Database
     """
@@ -107,21 +108,27 @@ def add_search_term(email, search_term, context, min_date):
     search_term_col = pubmed_db[STRM]
     paper_col = pubmed_db[PAPER]
     paper_ids = []
+    # first check if there is any paper in context
     # check if pmid already exist, then create list of objectid of pmid
-    for i, pmid in enumerate(context[PMID]):
-        result = paper_col.find_one({PMID: pmid})
-        if result:
-            paper_ids.append(result.get(ID))
-        else:
-            info = {}
-            info[PMID] = pmid
-            info[TITLE] = context.get(TITLE)[i]
-            info[PUB_DATE] = context.get(PUB_DATE)[i]
-            info[JOURNAL] = context.get(JOURNAL)[i]
-            info[ABSTRACT] = context.get(ABSTRACT)[i]
-            info[STRMS] = []
-            paper_ids.append(paper_col.insert_one(info).inserted_id)
+    if context.get(PMID):
+        for i, pmid in enumerate(context.get(PMID)):
+            result = paper_col.find_one({PMID: pmid})
+            if result:
+                paper_ids.append(result.get(ID))
+            else:
+                info = {}
+                info[PMID] = pmid
+                info[TITLE] = context.get(TITLE)[i]
+                info[PUB_DATE] = context.get(PUB_DATE)[i]
+                info[JOURNAL] = context.get(JOURNAL)[i]
+                info[ABSTRACT] = context.get(ABSTRACT)[i]
+                info[STRMS] = []
+                paper_ids.append(paper_col.insert_one(info).inserted_id)
     # insert search term
+    if context.get(PUB_DATE):
+        min_date = context.get(PUB_DATE)[0]
+    else:
+        min_date = datetime.today()
     info = {PAPERS: paper_ids, QUERY: search_term, MINDATE: min_date}
     search_term_idx = search_term_col.insert_one(info).inserted_id
 
