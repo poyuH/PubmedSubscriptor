@@ -29,7 +29,7 @@ def pmid_gen(query, date_after, retmax):
     return upto retmax amount of PMID results
     """
     today = datetime.now().strftime("%Y/%m/%d")
-    url = BASE + "esearch.fcgi?db=pubmed&api_key=%s&term=%s&retstart=%i&retmax=%i&mindate=%s&maxdate=%s&datetype=edat" % (APIKEY, query, restart, retmax, date_after, today)
+    url = BASE + "esearch.fcgi?db=pubmed&api_key=%s&term=%s&retstart=%i&retmax=%i&mindate=%s&maxdate=%s&datetype=pdat" % (APIKEY, query, restart, retmax, date_after, today)
     soup = bs(requests.get(url).content, features='html.parser')
     for pmid in soup.findAll(ID):
         yield pmid.string
@@ -67,8 +67,3 @@ def get_abstract(pmid):
     db_dict = {ABSTRACT: abstract, PMID: pmid}
     return db_dict
 
-"""
-query = '"dermatitis"[MeSH Terms] AND "fever"[MeSH Terms]'
-for pmid in pmid_gen(query, '2018/12/09', 30):
-    parse_pmid(pmid)
-"""
