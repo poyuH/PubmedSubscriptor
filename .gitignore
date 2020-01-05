@@ -3,4 +3,6 @@
 *old_flaskr*
 *secret*
 *__pycache__*
+*nohup.out
 .DS_Store
+*.bash_history
