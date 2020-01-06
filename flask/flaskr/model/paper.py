@@ -2,7 +2,7 @@ from . import db
 from .. import global_values
 from bson.objectid import ObjectId
 from collections import defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 
 USER = global_values.User.USER.value
 EMAIL = global_values.User.EMAIL.value
@@ -118,6 +118,7 @@ def add_search_term(email, search_term, context):
 
     # check if there is any paper in context
     # check if pmid already exist, then create list of objectid of pmid
+    min_date = datetime.strptime("1800/01/01", "%Y/%m/%d")
     if context.get(PMID):
         for i, pmid in enumerate(context.get(PMID)):
             result = paper_col.find_one({PMID: pmid})
@@ -132,11 +133,13 @@ def add_search_term(email, search_term, context):
                 info[ABSTRACT] = context.get(ABSTRACT)[i]
                 info[STRMS] = []
                 paper_ids.append(paper_col.insert_one(info).inserted_id)
-    # insert search term
-    if context.get(PUB_DATE):
-        min_date = context.get(PUB_DATE)[0]
+            if context.get(PUB_DATE)[i] > min_date:
+                min_date = context.get(PUB_DATE)[i]
+
+        min_date = min_date + timedelta(days=1)
     else:
         min_date = datetime.today()
+    # insert search term
     info = {PAPERS: paper_ids, QUERY: search_term, MINDATE: min_date}
     search_term_idx = search_term_col.insert_one(info).inserted_id
 
