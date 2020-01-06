@@ -3,7 +3,7 @@ from flask import (
 )
 from datetime import datetime
 import functools
-from .model import db, auth, paper
+from .model import db, auth, alter_db
 from .parser import parserController
 from . import global_values
 
@@ -78,8 +78,8 @@ def subscription():
         context = {}
     """
     context = {}
-    search_term_ids, search_terms = paper.get_user_search_terms(g.user)
-    context = paper.get_papers(search_term_ids, search_terms)
+    search_term_ids, search_terms = alter_db.get_user_search_terms(g.user)
+    context = alter_db.get_papers(search_term_ids, search_terms)
     return render_template("subscription.html", **context)
 
 
@@ -89,8 +89,8 @@ def add():
     if session.get(CONTEXT):
         email = session.get(USER_ID)
         try:
-            paper.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT))
-        except paper.TooManySearchTerms:
+            alter_db.add_search_term(email, session.get(CONTEXT).get(STRM), session.get(CONTEXT))
+        except alter_db.TooManySearchTerms:
             flash("Too many search terms. Please delete some before adding.")
         except:
             pass
@@ -103,7 +103,7 @@ def delete(search_term_idx):
     if search_term_idx:
         email = session.get(USER_ID)
         try:
-            paper.delete_search_term(email, search_term_idx)
+            alter_db.delete_search_term(email, search_term_idx)
         except:
             pass
     return redirect(url_for('controller.subscription'))
