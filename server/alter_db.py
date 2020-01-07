@@ -1,4 +1,4 @@
-import global_values
+import global_values, db
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -35,10 +35,11 @@ def delete_search_term_from_paper(paper_idx, search_term_idx, pubmed_db):
         # update paper
         paper_col.update_one(query, {'$set': {STRMS: search_term_ids}})
 
-def add_paper_to_search_term(search_term_idx, context, min_date, pubmed_db):
+def add_paper_to_search_term(search_term_idx, context, min_date):
     """
     add paper to search_term_idx
     """
+    pubmed_db = db.get_db()
     search_term_col = pubmed_db[STRM]
     paper_col = pubmed_db[PAPER]
     paper_ids = []

@@ -4,9 +4,9 @@ from collections import defaultdict
 from datetime import datetime
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
+from alter_db import add_paper_to_search_term
 import time, smtplib, ssl
-import db
-import parser, global_values, alter_db
+import parser, global_values, db
 
 PORT = 465
 retmax = 10
@@ -28,7 +28,7 @@ URL = global_values.Database.URL.value
 
 def send_email(receiver, info):
     """
-    send email to receiver based on info, which is a defaultdict(list)
+    send email to receiver based on info, which is a list of defaultdict(list)
     with title, pmid, etc
     """
 
@@ -45,16 +45,20 @@ def send_email(receiver, info):
     # Create the plain-text and HTML version of your message
     text, html = "", ""
 
-    for i, pmid in enumerate(info.get(PMID)):
-        # Skip abstract for now
-        text = text + info.get(TITLE)[i] + '\n' + info.get(URL)[i] + '\n' + info.get(PUB_DATE)[i].strftime('%Y-%m-%d') + '\n\n'
-        html = html + "<a href={}>{}</a><br>publish date: {}<br><br>".format(
-            info.get(URL)[i], info.get(TITLE)[i], info.get(PUB_DATE)[i].strftime('%Y-%m-%d')
-        )
+    for paper_dict in info:
+        text = text + "Search Term: {} \n".format(paper_dict.get(QUERY))
+        html = html + "Search Term: {} <br>".format(paper_dict.get(QUERY))
+        for i, pmid in enumerate(paper_dict.get(PMID)):
+            # Skip abstract for now
+            text = text + paper_dict.get(TITLE)[i] + '\n' + paper_dict.get(URL)[i] + '\n' + paper_dict.get(PUB_DATE)[i].strftime('%Y-%m-%d') + '\n\n'
+            html = html + "<a href={}>{}</a><br>publish date: {}<br><br>".format(
+                paper_dict.get(URL)[i], paper_dict.get(TITLE)[i], paper_dict.get(PUB_DATE)[i].strftime('%Y-%m-%d')
+            )
 
     text = """\
     Hi,
     This is the update for your Pubmed Subscriptions today.
+
     {}
     Have a great day""".format(text)
     html = """\
@@ -86,22 +90,23 @@ def send_email(receiver, info):
 
 
 def send_daily_updates():
-    jobs = []
+    pubmed_db = db.get_db()
     q = Queue(connection=Redis())
-    db.start()
-    users_col = db.db[USER]
-    search_term_col = db.db[STRM]
+    users_col = pubmed_db[USER]
+    search_term_col = pubmed_db[STRM]
     users = []
     for user in users_col.find({}):
         users.append(user)
     for user in users:
         receiver = user[EMAIL]
         search_terms_ids = user[STRMS]
+        paper_dicts = []
         for search_term_idx in search_terms_ids:
             result = search_term_col.find_one({ID: search_term_idx})
             min_date = result[MINDATE]
             search_term = result[QUERY]
             paper_dict = defaultdict(list)
+            paper_dict[QUERY] = search_term
             for pmid in parser.pmid_gen(search_term, min_date.strftime("%Y/%m/%d"), retmax):
                 result = parser.get_metadata(pmid)
                 abstract = parser.get_abstract(pmid)
@@ -111,11 +116,15 @@ def send_daily_updates():
                 paper_dict[TITLE].append(result.get(TITLE))
                 paper_dict[PMID].append(pmid)
                 paper_dict[URL].append('https://www.ncbi.nlm.nih.gov/pubmed/' + pmid)
-            # add pmid to database
-            alter_db.add_paper_to_search_term(search_term_idx, paper_dict, min_date, db.db)
-            # add email, email with abstract
-            if paper_dict:
-                send_email(receiver, paper_dict)
+            # Add pmid to database
+            # alter_db.add_paper_to_search_term(search_term_idx, paper_dict, min_date, pubmed_db)
+            job_add = q.enqueue(add_paper_to_search_term, search_term_idx, paper_dict, min_date)
+            paper_dicts.append(paper_dict)
+
+        if paper_dicts:
+            # Send email for each user
+            q.enqueue(send_email, receiver, paper_dicts, depends_on=job_add)
+            # send_email(receiver, paper_dict)
 
 """
        jobs.append(q.enqueue(send_email, receiver))
@@ -127,7 +136,3 @@ def send_daily_updates():
     context = defaultdict(list)
     print('finish')
     """
-
-
-if __name__ == '__main__':
-    send_daily_updates()

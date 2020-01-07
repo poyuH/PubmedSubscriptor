@@ -22,3 +22,9 @@ def close(exception):
         client.close()
     except Exception as e:
         pass
+
+def get_db():
+    if not db:
+        start()
+    return db
+
