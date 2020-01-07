@@ -1,6 +1,4 @@
-import db
 import global_values
-from bson.objectid import ObjectId
 from collections import defaultdict
 from datetime import datetime, timedelta
 
@@ -20,89 +18,22 @@ PAPERS = global_values.SearchTerm.PAPERS.value
 QUERY = global_values.SearchTerm.QUERY.value
 MINDATE = global_values.SearchTerm.MINDATE.value
 ID = global_values.Database.ID.value
-PAPER_ID = 'paper' + ID
-STRM_ID = 'search_term' + ID
-BREAK_PTS = 'break_pts'
-upper_limit_papers = 15
+upper_limit_papers = 10
 
-
-class TooManySearchTerms(Exception):
-    pass
-
-def get_user_search_terms(email):
-    """
-    get ObjectId of tags based on email
-    """
-    pubmed_db = db.get_db()
-    users_col = pubmed_db[USER]
-    search_term_col = pubmed_db[STRM]
-    query = {EMAIL:email}
-    search_term_ids = users_col.find_one(query)[STRMS]
-    search_terms = []
-    for idx in search_term_ids:
-        search_terms.append(search_term_col.find_one({ID:idx})[QUERY])
-    return search_term_ids, search_terms
-
-def get_papers(search_term_ids, search_terms):
-    """
-    get papers based on ObjectId of tags
-    """
-    pubmed_db = db.get_db()
-    strm_col = pubmed_db[STRM]
-    papers_col = pubmed_db[PAPER]
-    context = defaultdict(list)
-    outer_dict = defaultdict(list)
-    outer_dict[BREAK_PTS].append(0)
-    for i, idx in enumerate(search_term_ids):
-        query = {ID: idx}
-        outer_dict[STRM_ID].append(idx)
-        outer_dict[STRMS].append(search_terms[i])
-        for result in strm_col.find(query):
-            for paper_id in result[PAPERS]:
-                paper = papers_col.find_one({ID: paper_id})
-                context[PAPER_ID].append(paper_id)
-                context[URL].append('https://www.ncbi.nlm.nih.gov/pubmed/' + paper[PMID])
-                context[ABSTRACT].append(paper.get(ABSTRACT))
-                context[TITLE].append(paper.get(TITLE))
-                context[PUB_DATE].append(paper.get(PUB_DATE).strftime("%Y-%m-%d"))
-                context[JOURNAL].append(paper.get(JOURNAL))
-                context[STRMS].append(search_terms[i])
-        outer_dict[BREAK_PTS].append(len(context[URL]))
-    context.update(outer_dict)
-    return context
-
-def delete_search_term(email, search_term_idx_string):
-    """
-    delete_search_terms based on SearchTerm objectid and email
-    """
-    search_term_idx = ObjectId(search_term_idx_string)
-    pubmed_db = db.get_db()
-    users_col = pubmed_db[USER]
-    search_term_col = pubmed_db[STRM]
+def delete_search_term_from_paper(paper_idx, search_term_idx, pubmed_db):
     paper_col = pubmed_db[PAPER]
 
-    # delete from User
-    query = {EMAIL: email}
-    old_search_term_ids = users_col.find_one(query)[STRMS]
-    old_search_term_ids.remove(search_term_idx)
-    new_search_term_ids = {'$set': {STRMS: old_search_term_ids}}
-    users_col.update_one(query, new_search_term_ids)
-
     # delete papers which only associated with this search_term_idx
-    query = {ID: search_term_idx}
-    for result in search_term_col.find(query):
-        for old_paper_idx in result.get(PAPERS):
-            old_paper = paper_col.find_one({ID: old_paper_idx})
-            old_search_term_ids = old_paper.get(STRMS)
-            old_search_term_ids.remove(search_term_idx)
-            if len(old_search_term_ids) < 1:
-                paper_col.delete_one({ID: old_paper_idx})
-            else:
-                new_search_term_ids = {'$set': {STRMS: old_search_term_ids}}
-                paper_col.update_one({ID: old_paper_idx}, new_search_term_ids)
-    # delete search_term_idx
-    query = {ID: search_term_idx}
-    search_term_col.delete_one(query)
+    query = {ID: paper_idx}
+    search_term_ids = paper_col.find_one(query).get(STRMS)
+    if search_term_idx in search_term_ids:
+        search_term_ids.remove(search_term_idx)
+    if len(search_term_ids) == 0:
+        # delete paper
+        paper_col.delete_one(query)
+    else:
+        # update paper
+        paper_col.update_one(query, {'$set': {STRMS: search_term_ids}})
 
 def add_paper_to_search_term(search_term_idx, context, min_date, pubmed_db):
     """
@@ -142,6 +73,8 @@ def add_paper_to_search_term(search_term_idx, context, min_date, pubmed_db):
         if paper_idx not in old_paper_ids:
             if len(old_paper_ids) >= upper_limit_papers:
                 new_paper_ids = old_paper_ids[1:] + [paper_idx]
+                # delete papers that are excluded
+                delete_search_term_from_paper(old_paper_ids[0], search_term_idx, pubmed_db)
             else:
                 new_paper_ids = old_paper_ids + [paper_idx]
             search_term_col.update_one(query, {"$set": {PAPERS:new_paper_ids}})
