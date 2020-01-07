@@ -131,6 +131,10 @@ def add_paper_to_search_term(search_term_idx, context, min_date, pubmed_db):
             # update min_date
             if context.get(PUB_DATE)[i] >= min_date:
                 min_date = context.get(PUB_DATE)[i]
+        min_date = min_date + timedelta(days=1)
+        query = {ID: search_term_idx}
+        search_term_col.update_one(query, {"$set": {MINDATE:min_date}})
+
     for paper_idx in paper_ids:
         # update search term
         query = {ID: search_term_idx}
@@ -140,7 +144,7 @@ def add_paper_to_search_term(search_term_idx, context, min_date, pubmed_db):
                 new_paper_ids = old_paper_ids[1:] + [paper_idx]
             else:
                 new_paper_ids = old_paper_ids + [paper_idx]
-            search_term_col.update_one(query, {"$set": {PAPERS:new_paper_ids, MINDATE:min_date + timedelta(days=1)}})
+            search_term_col.update_one(query, {"$set": {PAPERS:new_paper_ids}})
 
         # add search term id into paper_col
         query = {ID: paper_idx}
