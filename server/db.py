@@ -22,18 +22,3 @@ def close(exception):
         client.close()
     except Exception as e:
         pass
-
-def get_all_users():
-    start()
-    users_col = db[USER]
-    users = []
-    for user in users_col.find({}):
-        users.append(user)
-    close(None)
-    return users
-
-
-
-def add():
-    """docstring for add"""
-
