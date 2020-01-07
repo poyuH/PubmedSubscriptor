@@ -9,7 +9,7 @@ import db
 import parser, global_values, alter_db
 
 PORT = 465
-retmax = 20
+retmax = 10
 SENDER = "pubmedsubscription@gmail.com"
 USER = global_values.User.USER.value
 EMAIL = global_values.User.EMAIL.value
@@ -130,5 +130,4 @@ def send_daily_updates():
 
 
 if __name__ == '__main__':
-    # send_email("poyu0987@gmail.com")
     send_daily_updates()

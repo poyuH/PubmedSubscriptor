@@ -4,7 +4,7 @@ import global_values
 import requests, json, sys
 
 
-ID = global_values.Database.ID.value
+ID = 'id'
 BASE = 'https://eutils.ncbi.nlm.nih.gov/entrez/eutils/'
 CNT = 'count'
 ERROR = 'error'
