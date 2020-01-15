@@ -14,4 +14,4 @@ RUN pip install requests==2.22.0
 
 COPY ./flaskr /app/flaskr
 
-CMD export FLASK_APP=flaskr && flask run -h 0.0.0.0
+CMD export FLASK_APP=flaskr && flask run -h 0.0.0.0 -p 80
